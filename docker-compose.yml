@@ -1,0 +1,46 @@
+# =============================================================================
+# docker-compose.yml - Local development environment
+# =============================================================================
+# Start:  docker-compose up
+# Stop:   docker-compose down
+# Rebuild: docker-compose up --build
+# =============================================================================
+
+version: "3.8"
+
+services:
+  # FastAPI application service
+  app:
+    # Build the Docker image from the Dockerfile in the current directory
+    build: .
+
+    # Name the container
+    container_name: todo-api
+
+    # Map port 8000 on the host to port 8000 in the container
+    ports:
+      - "8000:8000"
+
+    # Mount the source code directory as a volume
+    # This allows code changes to be reflected without rebuilding the image
+    volumes:
+      - ./src:/app
+
+    # Environment variables for the application
+    environment:
+      - APP_ENV=development
+      - APP_VERSION=1.0.0
+
+    # Override the default command to enable auto-reload during development
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Health check for docker-compose
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

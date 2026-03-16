@@ -1,0 +1,21 @@
+# =============================================================================
+# requirements.txt - Python dependencies for the FastAPI project
+# =============================================================================
+# Install these dependencies with:
+#   pip install -r requirements.txt
+# =============================================================================
+
+# FastAPI - The web framework
+fastapi==0.109.0
+
+# Uvicorn - ASGI server to run FastAPI
+uvicorn[standard]==0.27.0
+
+# Pydantic - Data validation (used by FastAPI for request/response models)
+pydantic==2.5.3
+
+# Pytest - Testing framework
+pytest==7.4.4
+
+# HTTPX - HTTP client (used by FastAPI's TestClient)
+httpx==0.25.2

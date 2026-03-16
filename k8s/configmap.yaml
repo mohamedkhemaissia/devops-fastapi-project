@@ -1,0 +1,29 @@
+# =============================================================================
+# configmap.yaml - Kubernetes ConfigMap for application configuration
+# =============================================================================
+# Apply with: kubectl apply -f k8s/configmap.yaml
+# Check: kubectl get configmaps
+# View: kubectl describe configmap todo-api-config
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # Name must match what's referenced in deployment.yaml (envFrom.configMapRef.name)
+  name: todo-api-config
+  labels:
+    app: todo-api
+
+# Data contains key-value pairs that will be injected as environment variables
+data:
+  # Application environment (development, staging, production)
+  APP_ENV: "production"
+
+  # Log level (DEBUG, INFO, WARNING, ERROR)
+  LOG_LEVEL: "INFO"
+
+  # Application name (used in logs and metrics)
+  APP_NAME: "todo-api"
+
+  # Port the application listens on
+  APP_PORT: "8000"
