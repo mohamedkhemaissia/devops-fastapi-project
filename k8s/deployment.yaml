@@ -1,0 +1,95 @@
+# =============================================================================
+# deployment.yaml - Kubernetes Deployment for the FastAPI application
+# =============================================================================
+# Apply with: kubectl apply -f k8s/deployment.yaml
+# Check status: kubectl get deployments
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # Name of the deployment
+  name: todo-api-deployment
+  # Labels help organize and select resources
+  labels:
+    app: todo-api
+    version: "1.0.0"
+    environment: production
+
+spec:
+  # Number of pod replicas to run (2 for high availability)
+  replicas: 2
+
+  # Selector tells the deployment which pods it manages
+  selector:
+    matchLabels:
+      app: todo-api
+
+  # Strategy for updating pods (rolling update = no downtime)
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # Can add 1 extra pod during update
+      maxUnavailable: 0  # No pods can be unavailable during update
+
+  # Pod template - defines what each pod looks like
+  template:
+    metadata:
+      labels:
+        app: todo-api
+        version: "1.0.0"
+    spec:
+      containers:
+        - name: todo-api
+          # Docker image to use (change this to your image)
+          image: ghcr.io/mohamedkhemaissia/devops-fastapi-project:latest
+          # Always pull the latest image
+          imagePullPolicy: Always
+
+          # Port that the container exposes
+          ports:
+            - containerPort: 8000
+              name: http
+
+          # Environment variables from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: todo-api-config
+
+          # Additional environment variables
+          env:
+            - name: APP_VERSION
+              value: "1.0.0"
+
+          # Resource limits - IMPORTANT for production!
+          resources:
+            requests:
+              # Minimum resources guaranteed to the container
+              memory: "64Mi"    # 64 megabytes of memory
+              cpu: "50m"        # 50 millicores (0.05 CPU)
+            limits:
+              # Maximum resources the container can use
+              memory: "256Mi"   # 256 megabytes of memory
+              cpu: "200m"       # 200 millicores (0.2 CPU)
+
+          # Liveness Probe: Kubernetes restarts the pod if this fails
+          # "Is the application still alive?"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10  # Wait 10s before first check
+            periodSeconds: 30         # Check every 30 seconds
+            timeoutSeconds: 5         # Timeout after 5 seconds
+            failureThreshold: 3       # Restart after 3 failures
+
+          # Readiness Probe: Kubernetes sends traffic when this passes
+          # "Is the application ready to receive requests?"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5   # Wait 5s before first check
+            periodSeconds: 10         # Check every 10 seconds
+            timeoutSeconds: 3         # Timeout after 3 seconds
+            failureThreshold: 3       # Stop sending traffic after 3 failures
